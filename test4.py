@@ -23,6 +23,7 @@ def fetch(pid):
 
 wiki_dir = "/root/workspace/wiki"
 
+print("================写出爬取文本数据=================")
 index_content = fetch(189)[-1]
 data = []
 if len(index_content) > 0:
@@ -30,6 +31,7 @@ if len(index_content) > 0:
     pattern = r"\((.*?)\s+(.*?)\)"
     lines = index_content.split("\n")
     for line in lines:
+        print(line)
         match = re.search(pattern, line)
         if match:
             url = match.group(1)
@@ -60,7 +62,7 @@ for tuple in data:
 len(documents)
 pprint(documents[0])
 
-
+print("================获取 document 中的文本内容=================")
 # 获取 document 中的文本内容
 def mapDocs(documents):
     docs = []
@@ -80,20 +82,25 @@ pprint(mapDocs(txt_docs[:5]))
 
 
 
-print("================模型语句 token 拆分器, 需要配合向量模型=================")
+print("================模型语句 token 拆分器=================")
 from langchain.text_splitter import SentenceTransformersTokenTextSplitter
-pmmb_model = "/root/workspace/largeModels/paraphrase-multilingual-mpnet-base-v2"
+pmmb_model = "/mnt/e/ai/models/paraphrase-multilingual-mpnet-base-v2"
 st_splitter = SentenceTransformersTokenTextSplitter(chunk_overlap=0, model_name=pmmb_model)
 st_docs = st_splitter.split_documents(documents)
 pprint(mapDocs(st_docs[:5]))
 
 
-print("================常规的 embedding 模型=================")
+print("================使用嵌入向量化模型将数据向量化=================")
 from langchain.embeddings import SentenceTransformerEmbeddings
 # embedding_model = "/mnt/e/ai/models/m3e-base"
-embedding_model = "/mnt/e/ai/models/text2vec-large-chinese"
+embedding_model = "/mnt/e/ai/models/text2vec-base-chinese"
 embeddings = SentenceTransformerEmbeddings(model_name=embedding_model)
 test_ret = embeddings.embed_query("hello, world")
 pprint(len(test_ret))
 st_embedded_docs = embeddings.embed_documents(mapDocs(txt_docs))
-# pprint(st_embedded_docs[0])
+pprint(st_embedded_docs[0])
+
+print("================向量化模型切换=================")
+from sentence_transformers import SentenceTransformer
+pmmb_model = SentenceTransformer('/mnt/e/ai/models/paraphrase-multilingual-mpnet-base-v2')
+
